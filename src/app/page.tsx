@@ -49,11 +49,14 @@ interface ChatSession {
 }
 
 const AI_MODELS = [
-  { id: 'deepseek/deepseek-chat', name: 'DeepSeek V3', desc: 'Sangat Cepat & Hemat ($0.27/M)', badge: '⚡ DeepSeek' },
-  { id: 'deepseek/deepseek-r1', name: 'DeepSeek R1', desc: 'Penalaran Logika / Reasoning', badge: '🧠 R1 Reason' },
-  { id: 'meta-llama/llama-3.2-11b-vision-instruct:free', name: 'Llama 3.2 Vision (FREE)', desc: 'Gratis 100% Reset Tiap Hari + Baca Foto', badge: '📷 Free Vision' },
-  { id: 'meta-llama/llama-3.3-70b-instruct:free', name: 'Llama 3.3 70B (FREE)', desc: 'Gratis 100% Reset Tiap Hari', badge: '🚀 Free 70B' },
-  { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', desc: 'Raja Coding & Arsitektur', badge: '👑 Pro Code' },
+  { id: 'cohere:command-r-plus-08-2024', name: 'Cohere Command R+', desc: 'Flagship RAG & Multilingual (1.000 Call/Bulan Gratis)', badge: '💎 Cohere Pro' },
+  { id: 'cohere:c4ai-aya-vision-32b', name: 'Cohere Aya Vision 32B', desc: 'Analisis Foto & Tugas Sekolah (Gratis)', badge: '📷 Free Vision' },
+  { id: 'deepseek/deepseek-chat', name: 'DeepSeek V3', desc: 'Sangat Cepat & Super Hemat ($0.27/M)', badge: '⚡ DeepSeek' },
+  { id: 'deepseek/deepseek-r1', name: 'DeepSeek R1', desc: 'Raja Penalaran Logika & Coding (Setara o1)', badge: '🧠 R1 Reason' },
+  { id: 'nvidia/nemotron-3-ultra-550b-a55b:free', name: 'Nvidia Nemotron 550B (FREE)', desc: 'Model Raksasa 550 Miliar Parameter Gratis', badge: '🚀 Nvidia 550B' },
+  { id: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', name: 'Nvidia Omni Reasoning (FREE)', desc: 'Penalaran Logika Gratis Reset Tiap Hari', badge: '🧩 Free Reason' },
+  { id: 'baidu/ernie-5.5-flash-preview:free', name: 'Baidu ERNIE Flash (FREE)', desc: 'AI Unggulan China Gratis Reset Tiap Hari', badge: '🇨🇳 Baidu AI' },
+  { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', desc: 'Raja Coding & Arsitektur (OpenRouter)', badge: '👑 Pro Code' },
   { id: 'openai-direct:gpt-4o', name: 'GPT-4o (Direct)', desc: 'Kunci OpenAI Anda', badge: '🌟 OpenAI' },
 ];
 

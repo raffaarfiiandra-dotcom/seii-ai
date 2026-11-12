@@ -45,6 +45,15 @@ Always provide direct, actionable, and verified answers. Format all code neatly 
       requestBody.plugins = [{ id: 'web' }];
     }
 
+    // Direct Cohere handling if requested
+    if (targetModel.startsWith('cohere:')) {
+      const realModel = targetModel.replace('cohere:', '');
+      targetUrl = 'https://api.cohere.com/compatibility/v1/chat/completions';
+      authHeader = `Bearer ${process.env.COHERE_API_KEY || 'yoZ7ZX6JoiGKj1duo3JiyNBFz2upZE5O1sYDCGxH'}`;
+      requestBody.model = realModel;
+      delete requestBody.plugins;
+    }
+
     // Direct OpenAI handling if requested
     if (targetModel.startsWith('openai-direct:')) {
       const realModel = targetModel.replace('openai-direct:', '');
