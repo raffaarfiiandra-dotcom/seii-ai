@@ -49,6 +49,8 @@ interface ChatSession {
 }
 
 const AI_MODELS = [
+  { id: 'groq:openai/gpt-oss-120b', name: 'GPT-OSS 120B (Groq)', desc: '120 Miliar Parameter, Kilat 0.2s & Limit Reset 1 Menit', badge: '⚡ Groq 120B' },
+  { id: 'groq:qwen/qwen3.8-27b', name: 'Qwen 3.8 27B (Groq)', desc: 'Super Cepat, Logika Tajam & Gratis', badge: '⚡ Groq Qwen' },
   { id: 'cohere:command-r-plus-08-2024', name: 'Cohere Command R+', desc: 'Flagship RAG & Multilingual (1.000 Call/Bulan Gratis)', badge: '💎 Cohere Pro' },
   { id: 'cohere:c4ai-aya-vision-32b', name: 'Cohere Aya Vision 32B', desc: 'Analisis Foto & Tugas Sekolah (Gratis)', badge: '📷 Free Vision' },
   { id: 'deepseek/deepseek-chat', name: 'DeepSeek V3', desc: 'Sangat Cepat & Super Hemat ($0.27/M)', badge: '⚡ DeepSeek' },

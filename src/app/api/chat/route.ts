@@ -45,11 +45,20 @@ Always provide direct, actionable, and verified answers. Format all code neatly 
       requestBody.plugins = [{ id: 'web' }];
     }
 
+    // Direct Groq handling if requested
+    if (targetModel.startsWith('groq:')) {
+      const realModel = targetModel.replace('groq:', '');
+      targetUrl = 'https://api.groq.com/openai/v1/chat/completions';
+      authHeader = `Bearer ${process.env.GROQ_API_KEY}`;
+      requestBody.model = realModel;
+      delete requestBody.plugins;
+    }
+
     // Direct Cohere handling if requested
     if (targetModel.startsWith('cohere:')) {
       const realModel = targetModel.replace('cohere:', '');
       targetUrl = 'https://api.cohere.com/compatibility/v1/chat/completions';
-      authHeader = `Bearer ${process.env.COHERE_API_KEY || 'yoZ7ZX6JoiGKj1duo3JiyNBFz2upZE5O1sYDCGxH'}`;
+      authHeader = `Bearer ${process.env.COHERE_API_KEY}`;
       requestBody.model = realModel;
       delete requestBody.plugins;
     }
