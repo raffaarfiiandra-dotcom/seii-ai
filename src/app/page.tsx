@@ -25,7 +25,10 @@ import {
   Database,
   TrendingUp,
   BookOpen,
-  Wrench
+  Wrench,
+  Paperclip,
+  FileText,
+  Loader2
 } from 'lucide-react';
 
 interface ContentPart {
@@ -48,18 +51,123 @@ interface ChatSession {
   createdAt: number;
 }
 
+interface AttachedDoc {
+  name: string;
+  size: number;
+  text: string;
+}
+
 const AI_MODELS = [
-  { id: 'groq:openai/gpt-oss-120b', name: 'GPT-OSS 120B (Groq)', desc: '120 Miliar Parameter, Kilat 0.2s & Limit Reset 1 Menit', badge: '⚡ Groq 120B' },
-  { id: 'groq:qwen/qwen3.8-27b', name: 'Qwen 3.8 27B (Groq)', desc: 'Super Cepat, Logika Tajam & Gratis', badge: '⚡ Groq Qwen' },
-  { id: 'cohere:command-r-plus-08-2024', name: 'Cohere Command R+', desc: 'Flagship RAG & Multilingual (1.000 Call/Bulan Gratis)', badge: '💎 Cohere Pro' },
-  { id: 'cohere:c4ai-aya-vision-32b', name: 'Cohere Aya Vision 32B', desc: 'Analisis Foto & Tugas Sekolah (Gratis)', badge: '📷 Free Vision' },
-  { id: 'deepseek/deepseek-chat', name: 'DeepSeek V3', desc: 'Sangat Cepat & Super Hemat ($0.27/M)', badge: '⚡ DeepSeek' },
-  { id: 'deepseek/deepseek-r1', name: 'DeepSeek R1', desc: 'Raja Penalaran Logika & Coding (Setara o1)', badge: '🧠 R1 Reason' },
-  { id: 'nvidia/nemotron-3-ultra-550b-a55b:free', name: 'Nvidia Nemotron 550B (FREE)', desc: 'Model Raksasa 550 Miliar Parameter Gratis', badge: '🚀 Nvidia 550B' },
-  { id: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', name: 'Nvidia Omni Reasoning (FREE)', desc: 'Penalaran Logika Gratis Reset Tiap Hari', badge: '🧩 Free Reason' },
-  { id: 'baidu/ernie-5.5-flash-preview:free', name: 'Baidu ERNIE Flash (FREE)', desc: 'AI Unggulan China Gratis Reset Tiap Hari', badge: '🇨🇳 Baidu AI' },
-  { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', desc: 'Raja Coding & Arsitektur (OpenRouter)', badge: '👑 Pro Code' },
-  { id: 'openai-direct:gpt-4o', name: 'GPT-4o (Direct)', desc: 'Kunci OpenAI Anda', badge: '🌟 OpenAI' },
+  {
+    id: 'groq:openai/gpt-oss-120b',
+    name: 'GPT-OSS 120B (Groq)',
+    status: 'free',
+    badge: '⚡ Groq 120B',
+    statusTag: '🟢 GRATIS',
+    limitDesc: '1.000 Req • Reset 1.5 Menit',
+    dropdownLabel: '🟢 GPT-OSS 120B (Groq) — [GRATIS • Reset Tiap 1.5 Menit]',
+    desc: '120 Miliar Parameter, Penalaran Logika & Kilat 0.2s',
+  },
+  {
+    id: 'groq:qwen/qwen3.8-27b',
+    name: 'Qwen 3.8 27B (Groq)',
+    status: 'free',
+    badge: '⚡ Groq Qwen',
+    statusTag: '🟢 GRATIS',
+    limitDesc: '1.000 Req • Reset 1.5 Menit',
+    dropdownLabel: '🟢 Qwen 3.8 27B (Groq) — [GRATIS • Reset Tiap 1.5 Menit]',
+    desc: 'Super Cepat, Logika & Coding Tajam',
+  },
+  {
+    id: 'cohere:command-r-plus-08-2024',
+    name: 'Cohere Command R+',
+    status: 'free',
+    badge: '💎 Cohere Pro',
+    statusTag: '🟢 GRATIS',
+    limitDesc: '1.000 Chat / Bulan (Reset Bulanan)',
+    dropdownLabel: '🟢 Cohere Command R+ — [GRATIS • 1.000 Chat / Bulan]',
+    desc: 'Flagship RAG & Multilingual Bahasa Indonesia',
+  },
+  {
+    id: 'cohere:c4ai-aya-vision-32b',
+    name: 'Cohere Aya Vision 32B',
+    status: 'free',
+    badge: '📷 Free Vision',
+    statusTag: '🟢 GRATIS',
+    limitDesc: 'Analisis Foto & PR Tugas Bebas Limit',
+    dropdownLabel: '🟢 Cohere Aya Vision 32B — [GRATIS • Foto & PR OCR]',
+    desc: 'Analisis Foto, Tugas Sekolah & Dokumen OCR',
+  },
+  {
+    id: 'nvidia/nemotron-3-ultra-550b-a55b:free',
+    name: 'Nvidia Nemotron 550B',
+    status: 'free',
+    badge: '🚀 Nvidia 550B',
+    statusTag: '🟢 GRATIS',
+    limitDesc: 'Reset Harian 24 Jam (OpenRouter)',
+    dropdownLabel: '🟢 Nvidia Nemotron 550B — [GRATIS • Reset Tiap Hari]',
+    desc: 'Model Raksasa 550 Miliar Parameter Gratis',
+  },
+  {
+    id: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+    name: 'Nvidia Omni Reasoning',
+    status: 'free',
+    badge: '🧩 Free Reason',
+    statusTag: '🟢 GRATIS',
+    limitDesc: 'Reset Harian 24 Jam (OpenRouter)',
+    dropdownLabel: '🟢 Nvidia Omni Reasoning — [GRATIS • Reset Tiap Hari]',
+    desc: 'Penalaran Logika & Step-by-Step Gratis',
+  },
+  {
+    id: 'baidu/ernie-5.5-flash-preview:free',
+    name: 'Baidu ERNIE Flash',
+    status: 'free',
+    badge: '🇨🇳 Baidu AI',
+    statusTag: '🟢 GRATIS',
+    limitDesc: 'Reset Harian 24 Jam (OpenRouter)',
+    dropdownLabel: '🟢 Baidu ERNIE Flash — [GRATIS • Reset Tiap Hari]',
+    desc: 'AI Unggulan China Gratis Reset Harian',
+  },
+  {
+    id: 'deepseek/deepseek-chat',
+    name: 'DeepSeek V3',
+    status: 'paid_cheap',
+    badge: '⚡ DeepSeek',
+    statusTag: '🟡 BERBAYAR HEMAT',
+    limitDesc: 'Sangat Murah Rp 4 / 1.000 Kata',
+    dropdownLabel: '🟡 DeepSeek V3 — [BERBAYAR • Hemat Rp 4/1.000 kata]',
+    desc: 'Sangat Cepat, Cerdas & Saldo Sangat Irit',
+  },
+  {
+    id: 'deepseek/deepseek-r1',
+    name: 'DeepSeek R1',
+    status: 'paid_cheap',
+    badge: '🧠 R1 Reason',
+    statusTag: '🟡 BERBAYAR HEMAT',
+    limitDesc: 'Penalaran Logika Setara OpenAI o1',
+    dropdownLabel: '🟡 DeepSeek R1 — [BERBAYAR • Penalaran Logika Setara o1]',
+    desc: 'Raja Penalaran Matematika, Coding & Logika',
+  },
+  {
+    id: 'anthropic/claude-3.5-sonnet',
+    name: 'Claude 3.5 Sonnet',
+    status: 'paid',
+    badge: '👑 Pro Code',
+    statusTag: '🟡 BERBAYAR',
+    limitDesc: 'Potong Saldo Akun OpenRouter',
+    dropdownLabel: '🔴 Claude 3.5 Sonnet — [BERBAYAR • Saldo OpenRouter]',
+    desc: 'Raja Coding & Arsitektur Terbaik di Dunia',
+  },
+  {
+    id: 'openai-direct:gpt-4o',
+    name: 'GPT-4o (Direct)',
+    status: 'out_of_quota',
+    badge: '🌟 OpenAI',
+    statusTag: '🔴 KUOTA HABIS',
+    limitDesc: 'Saldo Akun OpenAI $0 (Error 429)',
+    dropdownLabel: '🔴 GPT-4o (Direct) — [KUOTA HABIS • Saldo OpenAI $0]',
+    desc: 'Kunci OpenAI Anda (Perlu Isi Saldo)',
+  },
 ];
 
 const AI_ROLES = [
@@ -172,12 +280,15 @@ export default function SeiiAIHub() {
   const [inputMessage, setInputMessage] = useState('');
   const [enableWebSearch, setEnableWebSearch] = useState(false);
   const [attachedImage, setAttachedImage] = useState<string | null>(null);
+  const [attachedDoc, setAttachedDoc] = useState<AttachedDoc | null>(null);
+  const [isUploadingDoc, setIsUploadingDoc] = useState(false);
 
   const [isStreaming, setIsStreaming] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const docInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Load auth & sessions from localStorage
@@ -294,26 +405,72 @@ export default function SeiiAIHub() {
       setAttachedImage(reader.result as string);
       // Auto select a vision model if current model doesn't support vision
       if (!selectedModel.includes('vision') && !selectedModel.includes('gpt-4o') && !selectedModel.includes('claude')) {
-        setSelectedModel('meta-llama/llama-3.2-11b-vision-instruct:free');
+        setSelectedModel('cohere:c4ai-aya-vision-32b');
       }
     };
     reader.readAsDataURL(file);
   };
 
+  const handleDocUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 15 * 1024 * 1024) {
+      alert('Ukuran dokumen maksimal 15MB!');
+      return;
+    }
+
+    setIsUploadingDoc(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Gagal membaca file' }));
+        alert(err.error || 'Gagal mengunggah dokumen.');
+        setIsUploadingDoc(false);
+        return;
+      }
+
+      const data = await res.json();
+      setAttachedDoc({
+        name: data.name,
+        size: data.size,
+        text: data.text,
+      });
+    } catch (err: any) {
+      alert('Gagal memproses file: ' + err.message);
+    } finally {
+      setIsUploadingDoc(false);
+      if (docInputRef.current) docInputRef.current.value = '';
+    }
+  };
+
   const handleSendMessage = async (customPrompt?: string, forceWeb?: boolean) => {
     const textToSend = customPrompt || inputMessage.trim();
-    if ((!textToSend && !attachedImage) || isStreaming) return;
+    if ((!textToSend && !attachedImage && !attachedDoc) || isStreaming) return;
 
     setInputMessage('');
     const imageToSend = attachedImage;
+    const docToSend = attachedDoc;
     setAttachedImage(null);
+    setAttachedDoc(null);
 
     const currentRole = AI_ROLES.find((r) => r.id === selectedRole) || AI_ROLES[0];
 
-    let userContent: string | ContentPart[] = textToSend;
+    let fullPromptText = textToSend;
+    if (docToSend) {
+      fullPromptText = `[Lampiran Dokumen: ${docToSend.name} (${(docToSend.size / 1024).toFixed(1)} KB)]\n---\n${docToSend.text.slice(0, 45000)}\n---\n\n${textToSend || 'Tolong analisis, ringkas, atau jelaskan isi dokumen di atas.'}`;
+    }
+
+    let userContent: string | ContentPart[] = fullPromptText;
     if (imageToSend) {
       userContent = [
-        { type: 'text', text: textToSend || 'Analisis dan jelaskan gambar/soal ini.' },
+        { type: 'text', text: fullPromptText || 'Analisis dan jelaskan gambar/soal ini.' },
         { type: 'image_url', image_url: { url: imageToSend } },
       ];
     }
@@ -460,6 +617,7 @@ export default function SeiiAIHub() {
 
   const activeRoleData = AI_ROLES.find((r) => r.id === selectedRole) || AI_ROLES[0];
   const ActiveRoleIcon = activeRoleData.icon;
+  const activeModelData = AI_MODELS.find((m) => m.id === selectedModel) || AI_MODELS[0];
 
   return (
     <div className="flex h-screen bg-[#080a10] text-gray-100 overflow-hidden">
@@ -577,14 +735,32 @@ export default function SeiiAIHub() {
               <select
                 value={selectedModel}
                 onChange={(e) => setSelectedModel(e.target.value)}
-                className="bg-transparent text-xs font-semibold text-white focus:outline-none cursor-pointer pr-1 max-w-[140px] sm:max-w-none truncate"
+                className="bg-transparent text-xs font-semibold text-white focus:outline-none cursor-pointer pr-1 max-w-[150px] sm:max-w-none truncate"
               >
                 {AI_MODELS.map((m) => (
                   <option key={m.id} value={m.id} className="bg-[#101524] text-white">
-                    {m.name} ({m.badge})
+                    {m.dropdownLabel}
                   </option>
                 ))}
               </select>
+            </div>
+
+            {/* Model Limit Status Pill */}
+            <div
+              className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold border shrink-0 ${
+                activeModelData.status === 'free'
+                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/40 shadow-sm shadow-emerald-500/10'
+                  : activeModelData.status === 'paid_cheap'
+                  ? 'bg-cyan-500/10 text-cyan-300 border-cyan-500/40'
+                  : activeModelData.status === 'paid'
+                  ? 'bg-amber-500/10 text-amber-300 border-amber-500/40'
+                  : 'bg-rose-500/10 text-rose-300 border-rose-500/40'
+              }`}
+              title={activeModelData.desc}
+            >
+              <span className="font-bold">{activeModelData.statusTag}</span>
+              <span className="opacity-40">•</span>
+              <span className="text-gray-300 text-[11px] font-medium">{activeModelData.limitDesc}</span>
             </div>
 
             {/* Persona / Role Selector */}
@@ -746,7 +922,23 @@ export default function SeiiAIHub() {
                           </ReactMarkdown>
                         </div>
                       ) : (
-                        <p className="whitespace-pre-wrap">{textContent}</p>
+                        <div>
+                          {textContent.includes('[Lampiran Dokumen:') ? (
+                            <div>
+                              <div className="mb-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/30 border border-white/20 text-[11px] text-cyan-200">
+                                <FileText className="w-3.5 h-3.5" />
+                                <span className="font-semibold">
+                                  {textContent.match(/\[Lampiran Dokumen:\s*([^\]]+)\]/)?.[1] || 'Dokumen Terlampir'}
+                                </span>
+                              </div>
+                              <p className="whitespace-pre-wrap font-medium">
+                                {textContent.split('---\n\n')[1] || textContent.split('---')[2] || 'Analisis dokumen terlampir.'}
+                              </p>
+                            </div>
+                          ) : (
+                            <p className="whitespace-pre-wrap">{textContent}</p>
+                          )}
+                        </div>
                       )}
 
                       {isAssistant && textContent && (
@@ -780,28 +972,54 @@ export default function SeiiAIHub() {
         {/* Input Dock */}
         <div className="p-3 sm:p-4 bg-[#0a0d16]/95 border-t border-gray-800/80">
           <div className="max-w-3xl mx-auto relative">
-            {/* Attached Image Preview */}
-            {attachedImage && (
-              <div className="mb-2 inline-flex items-center gap-2 p-1.5 bg-[#141a2c] border border-cyan-500/40 rounded-xl">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={attachedImage} alt="Attachment" className="w-10 h-10 object-cover rounded-lg" />
-                <span className="text-[11px] text-cyan-200 font-medium">Foto Terlampir</span>
-                <button
-                  type="button"
-                  onClick={() => setAttachedImage(null)}
-                  className="p-1 hover:text-red-400 text-gray-400 rounded"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            )}
+            {/* Previews (Image & Document) */}
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              {attachedImage && (
+                <div className="inline-flex items-center gap-2 p-1.5 bg-[#141a2c] border border-cyan-500/40 rounded-xl">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={attachedImage} alt="Attachment" className="w-10 h-10 object-cover rounded-lg" />
+                  <span className="text-[11px] text-cyan-200 font-medium">Foto Terlampir</span>
+                  <button
+                    type="button"
+                    onClick={() => setAttachedImage(null)}
+                    className="p-1 hover:text-red-400 text-gray-400 rounded"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+
+              {attachedDoc && (
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#141a2c] border border-cyan-500/40 rounded-xl">
+                  <FileText className="w-4 h-4 text-cyan-400 shrink-0" />
+                  <div className="flex flex-col">
+                    <span className="text-[11px] text-cyan-200 font-medium truncate max-w-[200px]">{attachedDoc.name}</span>
+                    <span className="text-[9px] text-gray-400">{(attachedDoc.size / 1024).toFixed(1)} KB • File Siap Dianalisis</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setAttachedDoc(null)}
+                    className="p-1 hover:text-red-400 text-gray-400 rounded ml-1"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+
+              {isUploadingDoc && (
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#141a2c] border border-gray-700 rounded-xl text-xs text-gray-300">
+                  <Loader2 className="w-3.5 h-3.5 text-cyan-400 animate-spin" />
+                  <span>Membaca isi file dokumen...</span>
+                </div>
+              )}
+            </div>
 
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 handleSendMessage();
               }}
-              className="flex items-center gap-2 bg-[#121727] border border-gray-700/80 focus-within:border-cyan-500 rounded-2xl p-2 pl-3 transition shadow-lg shadow-black/40"
+              className="flex items-center gap-1.5 sm:gap-2 bg-[#121727] border border-gray-700/80 focus-within:border-cyan-500 rounded-2xl p-2 pl-3 transition shadow-lg shadow-black/40"
             >
               {/* File Input for Camera / Photos */}
               <input
@@ -809,6 +1027,15 @@ export default function SeiiAIHub() {
                 ref={fileInputRef}
                 onChange={handleImageUpload}
                 accept="image/*"
+                className="hidden"
+              />
+
+              {/* File Input for Documents */}
+              <input
+                type="file"
+                ref={docInputRef}
+                onChange={handleDocUpload}
+                accept=".pdf,.txt,.doc,.docx,.csv,.json,.md,.js,.ts,.py,.html,.css,.sql,.cpp,.c,.java"
                 className="hidden"
               />
 
@@ -821,11 +1048,23 @@ export default function SeiiAIHub() {
                 <Camera className="w-4 h-4" />
               </button>
 
+              <button
+                type="button"
+                onClick={() => docInputRef.current?.click()}
+                disabled={isUploadingDoc}
+                className="p-2 rounded-xl text-gray-400 hover:text-cyan-400 hover:bg-gray-800/60 transition disabled:opacity-50"
+                title="Upload File Dokumen (PDF, Word, TXT, CSV, Kode)"
+              >
+                <Paperclip className="w-4 h-4" />
+              </button>
+
               <input
                 type="text"
                 placeholder={
                   attachedImage
                     ? 'Tanyakan apa yang perlu dijelaskan dari foto ini...'
+                    : attachedDoc
+                    ? `Tanyakan sesuatu tentang file ${attachedDoc.name}...`
                     : `Tanya ${activeRoleData.name} atau berita live...`
                 }
                 value={inputMessage}
@@ -836,7 +1075,7 @@ export default function SeiiAIHub() {
 
               <button
                 type="submit"
-                disabled={(!inputMessage.trim() && !attachedImage) || isStreaming}
+                disabled={(!inputMessage.trim() && !attachedImage && !attachedDoc) || isStreaming || isUploadingDoc}
                 className="p-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 disabled:opacity-40 disabled:hover:from-cyan-500 text-white transition shadow-md shadow-cyan-500/20"
               >
                 <Send className="w-4 h-4" />
@@ -844,8 +1083,21 @@ export default function SeiiAIHub() {
             </form>
 
             <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-gray-500 mt-2 px-1">
-              <span>Model: <strong className="text-gray-400">{AI_MODELS.find(m => m.id === selectedModel)?.name}</strong></span>
-              <span className="truncate max-w-[200px] sm:max-w-none">
+              <span className="truncate max-w-[240px] sm:max-w-none">
+                Model: <strong className="text-gray-300">{activeModelData.name}</strong>{' '}
+                <span className={
+                  activeModelData.status === 'free'
+                    ? 'text-emerald-400 font-bold ml-1'
+                    : activeModelData.status === 'paid_cheap'
+                    ? 'text-cyan-400 font-bold ml-1'
+                    : activeModelData.status === 'paid'
+                    ? 'text-amber-400 font-bold ml-1'
+                    : 'text-rose-400 font-bold ml-1'
+                }>
+                  ({activeModelData.limitDesc})
+                </span>
+              </span>
+              <span className="truncate max-w-[150px] sm:max-w-none">
                 {enableWebSearch ? '🌐 Live Web Search Aktif' : 'Mode Offline Database'}
               </span>
             </div>
